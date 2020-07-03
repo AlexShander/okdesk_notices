@@ -65,44 +65,6 @@ def send_msg_to_tlgrm(message: str, tlgrm_api_credintails: dict):
     return result_str.get('ok', False)
 
 
-def test():
-    okdesk_api_credintails = get_api_credentials()
-    issue_id = 4585
-    issue_info = get_issue_info(issue_id, okdesk_api_credintails)
-    issue_url = u"https://help.korkemtech.kz/issues/{}".format(issue_info['id'])
-    if issue_info.get('comments', None):
-        str_last_at = datetime.fromisoformat(issue_info.get('comments', None).get('last_at',
-                                                                                  '9999-12-31T00:00:00.000+03:00')).astimezone(
-            tz=None).strftime('%Y-%m-%d %H:%M')
-    else:
-        str_last_at = 'Нет комментариев к задаче.'
-    if issue_info.get('deadline_at', None):
-        str_deadline_at = datetime.fromisoformat(issue_info.get('deadline_at',
-                                                                '9999-12-31T00:00:00.000+03:00')).astimezone(
-            tz=None).strftime('%Y-%m-%d %H:%M')
-    else:
-        str_deadline_at = 'Нет даты deadline к задаче.'
-    if issue_info.get('assignee', None):
-        assigned_user = issue_info.get('assignee').get('name', None)
-        if not assigned_user:
-            assigned_user = 'Ни кто не взял заявку.'
-    comment = get_last_comments(get_comments_list(issue_id, okdesk_api_credintails))
-    tlgrm_msg = u"Время решения заявки истекло \n\
-    Дата окончания решения задачи: {}\n\
-    Дата последнего комментария: {}\n\
-    Наименование: {}\nОписание заявки: {}\n\
-    Ответственный по заявке: {}\n\
-    Последний комментарий к задаче: {}\n{}".format(str_deadline_at,
-                                                   str_last_at,
-                                                   issue_info.get('title', "Не указали наименование"),
-                                                   issue_info.get('description', "Нет описания задачи"),
-                                                   assigned_user,
-                                                   comment,
-                                                   issue_url)
-    print(tlgrm_msg)
-
-
-
 def main():
     tlgrm_api_credintails = get_tlgrm_credntials()
     okdesk_api_credintails = get_api_credentials()
@@ -197,5 +159,4 @@ def main():
 
 
 if __name__ == '__main__':
-    test()
-    #main()
+    main()

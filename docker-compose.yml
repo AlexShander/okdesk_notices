@@ -19,7 +19,9 @@ services:
       - domain=${domain}
       - tlgrm_token=${tlgrm_token}
       - tlgrm_bot_name=${tlgrm_bot_name}
-      - chat_id=${chat_id}
+      - chat_id=${chat_id}\
+    volumes:
+      - "/etc/timezone:/etc/timezone:ro"
     restart: always
 
   overdue_chk:
@@ -29,6 +31,8 @@ services:
     environment:
       - api_token=${api_token}
       - domain=${domain}
+    volumes:
+      - "/etc/timezone:/etc/timezone:ro"
     restart: always
 
 volumes:
