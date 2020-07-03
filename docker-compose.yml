@@ -1,0 +1,38 @@
+version: '3.1'
+
+services:
+  redis_okdesk:
+    image: redis:6.0.5-alpine 
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_okdesk:/data
+    networks:
+      - overlay
+    restart: always
+
+  telegrm_snd:
+    build: ./telegrm_snd
+    networks:
+      - overlay
+    environment:
+      - api_token=${api_token}
+      - domain=${domain}
+      - tlgrm_token=${tlgrm_token}
+      - tlgrm_bot_name=${tlgrm_bot_name}
+      - chat_id=${chat_id}
+    restart: always
+
+  overdue_chk:
+    build: ./overdue_chk
+    networks:
+      - overlay
+    environment:
+      - api_token=${api_token}
+      - domain=${domain}
+    restart: always
+
+volumes:
+  redis_okdesk:
+
+networks:
+  overlay:
