@@ -21,7 +21,7 @@ services:
       - tlgrm_bot_name=${tlgrm_bot_name}
       - chat_id=${chat_id}\
     volumes:
-      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"
     restart: always
 
   overdue_chk:
@@ -32,7 +32,7 @@ services:
       - api_token=${api_token}
       - domain=${domain}
     volumes:
-      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"
     restart: always
 
 volumes:
