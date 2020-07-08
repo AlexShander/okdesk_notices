@@ -13,14 +13,14 @@ def get_list_issues(url: str) -> set:
 
 
 def get_api_credentials():
-    okdesk_api_credintails = dict()
+    okdesk_api_credentials = dict()
     if os.getenv('domain') is not None and os.getenv('api_token') is not None:
-        okdesk_api_credintails = {'domain': os.getenv('domain'),
+        okdesk_api_credentials = {'domain': os.getenv('domain'),
                                   'api_token': os.getenv('api_token')}
     else:
         print("You must set domain and api_token in ENV")
         exit(-1)
-    return okdesk_api_credintails
+    return okdesk_api_credentials
 
 
 def get_list_overdue_reaction_issues():
@@ -67,16 +67,25 @@ def main():
                 if redis_okdesk.get(u"{}_tlgrm".format(str(notice))) is None:
                     if redis_okdesk.publish('overdue_reaction_noticed_tlgrm', u"{}_tlgrm".format(str(notice))) > 0:
                         redis_okdesk.set(u"{}_tlgrm".format(str(notice)), 'issue', ex=60 * 60 * 12)
+                if redis_okdesk.get(u"{}_email".format(str(notice))) is None:
+                    if redis_okdesk.publish('overdue_reaction_noticed_email', u"{}_email".format(str(notice))) > 0:
+                        redis_okdesk.set(u"{}_email".format(str(notice)), 'issue', ex=60 * 60 * 12)
             long_waiting_issues_notices = get_list_long_wait_issues()
             for notice in long_waiting_issues_notices:
                 if redis_okdesk.get(u"{}_tlgrm".format(str(notice))) is None:
                     if redis_okdesk.publish('long_wait_noticed_tlgrm', u"{}_tlgrm".format(str(notice))) > 0:
                         redis_okdesk.set(u"{}_tlgrm".format(str(notice)), 'issue', ex=60 * 60 * 12)
+                if redis_okdesk.get(u"{}_email".format(str(notice))) is None:
+                    if redis_okdesk.publish('long_wait_noticed_email', u"{}_email".format(str(notice))) > 0:
+                        redis_okdesk.set(u"{}_email".format(str(notice)), 'issue', ex=60 * 60 * 12)
             overdue_issue_notices = get_list_overdue_execution_issues()
             for notice in overdue_issue_notices:
                 if redis_okdesk.get(u"{}_tlgrm".format(str(notice))) is None:
                     if redis_okdesk.publish('overdue_noticed_tlgrm', u"{}_tlgrm".format(str(notice))) > 0:
                         redis_okdesk.set(u"{}_tlgrm".format(str(notice)), 'issue', ex=60 * 60 * 12)
+                if redis_okdesk.get(u"{}_email".format(str(notice))) is None:
+                    if redis_okdesk.publish('overdue_noticed_email', u"{}_email".format(str(notice))) > 0:
+                        redis_okdesk.set(u"{}_email".format(str(notice)), 'issue', ex=60 * 60 * 12)
             time.sleep(360)
     except (KeyboardInterrupt, SystemExit):
         print("Process is terminated")

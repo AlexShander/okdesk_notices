@@ -75,15 +75,6 @@ def get_last_comments(comments):
     return "Комментариев к задаче нет."
 
 
-def send_msg_to_tlgrm(message: str, tlgrm_api_credintails: dict):
-    api_key = u"{}:{}".format(tlgrm_api_credintails.get('bot_name'),
-                              tlgrm_api_credintails.get('token'))
-    bot = telebot.TeleBot(api_key)
-    bot.config['api_key'] = api_key
-    result_str = bot.send_message(tlgrm_api_credintails.get('chat_id'), message)
-    return result_str.get('ok', False)
-
-
 def send_email(email_credentials: dict, to_email: str, subject: str, message: str):
     smtp_server = smtplib.SMTP_SSL(email_credentials.get('server'), email_credentials.get('port'))
     smtp_server.ehlo()
