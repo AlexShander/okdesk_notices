@@ -6,18 +6,34 @@ from datetime import datetime, timezone
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+import re
+
+
+def get_email_list():
+    email_list = set()
+    try:
+        email_list_file = open("email_list.conf", "r+")
+        while True:
+            line = email_list_file.readline()
+            if not line:
+                break
+            if re.match(r"[^@]+@[^@]+\.[^@]+", line):
+                email_list.add(line)
+    except OSError:
+        print("I can't read a file, check file email_list.conf")
+    return email_list
 
 
 def get_email_credentials():
     email_credentials = dict()
     if os.getenv('email_server') is not None and os.getenv('email_login') is not None and \
        os.getenv('email_passwd') is not None:
-        email_credentials = {'server': os.getenv('tlgrm_token'),
+        email_credentials = {'server': os.getenv('email_server'),
                              'port': os.getenv('email_port', 465),
                              'email_login': os.getenv('email_login'),
                              'email_passwd': os.getenv('email_passwd')}
     else:
-        print("You must set the email credentials: server, port, email_login, email_passwd")
+        print("You must set the email credentials: email_server, email_login, email_passwd")
         exit(-1)
     return email_credentials
 
@@ -78,13 +94,31 @@ def send_email(email_credentials: dict, to_email: str, subject: str, message: st
     msg['Subject'] = subject
     body = MIMEText(message, 'plain')
     msg.attach(body)
-    smtp_server.send_message(msg)
+    try:
+        smtp_server.send_message(msg)
+    except smtplib.SMTPHeloError:
+        print("The server didn't reply properly to the helo greeting.")
+        return False
+    except smtplib.SMTPRecipientsRefused:
+        print("The server rejected ALL recipients (no mail was sent).")
+        return False
+    except smtplib.SMTPSenderRefused:
+        print("The server didn't accept the from_addr.")
+        return False
+    except smtplib.SMTPDataError:
+        print("The server replied with an unexpected error code (other than a refusal of a recipient).")
+        return False
+    except smtplib.SMTPNotSupportedError:
+        print("The mail_options parameter includes 'SMTPUTF8' but the SMTPUTF8 extension is not supported by the server.")
+        return False
     smtp_server.quit()
+    return True
 
 
 def main():
     email_credentials = get_email_credentials()
     okdesk_api_credintails = get_api_credentials()
+    email_list = get_email_list()
     redis_okdesk = redis.Redis(host='redis_okdesk', port=6379, db=0)
     overdue_reaction_channel = redis_okdesk.pubsub(ignore_subscribe_messages=True)
     overdue_reaction_channel.subscribe('overdue_reaction_noticed_email')
@@ -100,14 +134,21 @@ def main():
             issue_url = u"https://help.korkemtech.kz/issues/{}".format(issue_info['id'])
             str_planned_reaction_at = datetime.fromisoformat(issue_info['planned_reaction_at']).astimezone(
                 tz=None).strftime('%Y-%m-%d %H:%M')
-            tlgrm_msg = u"Просроченно время реакции \n\
+            email_msg = u"Просроченно время реакции \n\
 Плановое время реакции: {}\n{}\nНаименование: {}\n\
 Описание заявки: {}\n".format(str_planned_reaction_at,
                               issue_url,
                               issue_info.get('title', "Не указали наименование"),
-                              issue_info.get('description', "Нет описания задачи")                              )
-            if not send_msg_to_tlgrm(tlgrm_msg, tlgrm_api_credintails=email_credentials):
-                redis_okdesk.delete(u"{}_tlgrm".format(issue_id))
+                              issue_info.get('description', "Нет описания задачи"))
+            one_shoot_ok = False
+            for email in email_list:
+                if not send_email(email_credentials,
+                                  email,
+                                  u"Просроченно время реакции задачи: {}".format(issue_info['id']),
+                                  email_msg):
+                    one_shoot_ok = True
+            if not one_shoot_ok:
+                redis_okdesk.delete(u"{}_email".format(issue_id))
         long_waiting_message = long_waiting_channel.get_message()
         if long_waiting_message:
             issue_id = str(long_waiting_message['data'].decode('utf-8')).split('_')[0]
@@ -124,7 +165,7 @@ def main():
                 if not assigned_user:
                     assigned_user = 'Ни кто не взял заявку.'
             comment = get_last_comments(get_comments_list(issue_id, okdesk_api_credintails))
-            tlgrm_msg = u"Время последнего комментария больше 1 суток \n\
+            email_msg = u"Время последнего комментария больше 1 суток \n\
 Статус заявки: {}\nДата последнего комментария: {}\n\
 Наименование: {}\nОписание заявки: {}\n\
 Ответственный по заявке: {}\n\
@@ -135,8 +176,16 @@ def main():
                                                assigned_user,
                                                comment,
                                                issue_url)
-            if not send_msg_to_tlgrm(tlgrm_msg, tlgrm_api_credintails=email_credentials):
-                redis_okdesk.delete(u"{}_tlgrm".format(issue_id))
+            one_shoot_ok = False
+            for email in email_list:
+                if not send_email(email_credentials,
+                                  email,
+                                  u"Время последнего комментария больше 1 суток: {}".format(
+                                                                                     issue_info['id']),
+                                  email_msg):
+                    one_shoot_ok = True
+            if not one_shoot_ok:
+                redis_okdesk.delete(u"{}_email".format(issue_id))
         overdue_message = overdue_channel.get_message()
         if overdue_message:
             issue_id = str(overdue_message['data'].decode('utf-8')).split('_')[0]
@@ -158,7 +207,7 @@ def main():
                 if not assigned_user:
                     assigned_user = 'Ни кто не взял заявку.'
             comment = get_last_comments(get_comments_list(issue_id, okdesk_api_credintails))
-            tlgrm_msg = u"Время решения заявки истекло \n\
+            email_msg = u"Время решения заявки истекло \n\
 Дата окончания решения задачи: {}\n\
 Дата последнего комментария: {}\n\
 Наименование: {}\nОписание заявки: {}\n\
@@ -170,8 +219,15 @@ def main():
                                                assigned_user,
                                                comment,
                                                issue_url)
-            if not send_msg_to_tlgrm(tlgrm_msg, tlgrm_api_credintails=email_credentials):
-                redis_okdesk.delete(u"{}_tlgrm".format(issue_id))
+            one_shoot_ok = False
+            for email in email_list:
+                if not send_email(email_credentials,
+                                  email,
+                                  u"Время решения заявки истекло: {}".format(issue_info['id']),
+                                  email_msg):
+                    one_shoot_ok = True
+            if not one_shoot_ok:
+                redis_okdesk.delete(u"{}_email".format(issue_id))
         time.sleep(0.001)
 
 
