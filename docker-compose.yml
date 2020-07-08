@@ -10,6 +10,17 @@ services:
       - overlay
     restart: always
 
+  overdue_chk:
+    build: ./overdue_chk
+    networks:
+      - overlay
+    environment:
+      - api_token=${api_token}
+      - domain=${domain}
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+    restart: always
+
   telegrm_snd:
     build: ./telegrm_snd
     networks:
@@ -19,18 +30,22 @@ services:
       - domain=${domain}
       - tlgrm_token=${tlgrm_token}
       - tlgrm_bot_name=${tlgrm_bot_name}
-      - chat_id=${chat_id}\
+      - chat_id=${chat_id}
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
     restart: always
 
-  overdue_chk:
-    build: ./overdue_chk
+  email_snd:
+    build: ./email_snd
     networks:
       - overlay
     environment:
       - api_token=${api_token}
       - domain=${domain}
+      - email_server=${email_server}
+      - email_port=${email_port}
+      - email_login=${email_login}
+      - email_passwd=${email_passwd}
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
     restart: always
