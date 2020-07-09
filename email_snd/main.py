@@ -133,7 +133,7 @@ def main():
                               issue_info.get('description', "Нет описания задачи"))
             one_shoot_ok = False
             for email in email_list:
-                if not send_email(email_credentials,
+                if send_email(email_credentials,
                                   email,
                                   u"Просроченно время реакции задачи: {}".format(issue_info['id']),
                                   email_msg):
