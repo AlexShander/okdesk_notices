@@ -212,7 +212,7 @@ def main():
                                                issue_url)
             one_shoot_ok = False
             for email in email_list:
-                if not send_email(email_credentials,
+                if send_email(email_credentials,
                                   email,
                                   u"Время решения заявки истекло: {}".format(issue_info['id']),
                                   email_msg):
