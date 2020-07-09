@@ -169,7 +169,7 @@ def main():
                                                issue_url)
             one_shoot_ok = False
             for email in email_list:
-                if not send_email(email_credentials,
+                if send_email(email_credentials,
                                   email,
                                   u"Время последнего комментария больше 1 суток: {}".format(
                                                                                      issue_info['id']),
