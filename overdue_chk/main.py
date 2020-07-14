@@ -26,13 +26,11 @@ def get_api_credentials():
 def get_list_overdue_reaction_issues():
     overdue_issues_url = u"http://{}.okdesk.ru/api/v1/issues/count?api_token=\
 {}&overdue_reaction=1&status[]=opened".format(okdesk_api_credintails.get('domain'),
-                                                  okdesk_api_credintails.get('api_token')
-                                                  )
+                                              okdesk_api_credintails.get('api_token'))
     answered_overdue_issues_url = u"http://{}.okdesk.ru/api/v1/issues/count?api_token=\
 {}&overdue_reaction=1&status[]=opened&reacted_until={}".format(okdesk_api_credintails.get('domain'),
-                                                                   okdesk_api_credintails.get('api_token'),
-                                                                   time.strftime('%d-%m-%Y %H:%M')
-                                                                   )
+                                                               okdesk_api_credintails.get('api_token'),
+                                                               time.strftime('%d-%m-%Y %H:%M'))
     list_overdue_issues = get_list_issues(overdue_issues_url)
     list_overdue_answered_issues = get_list_issues(answered_overdue_issues_url)
     return list_overdue_issues.difference(list_overdue_answered_issues)
@@ -41,7 +39,7 @@ def get_list_overdue_reaction_issues():
 def get_list_long_wait_issues():
     waiting_issues_url = u"http://{}.okdesk.ru/api/v1/issues/count?api_token=\
 {}&status[]=waiting".format(okdesk_api_credintails.get('domain'),
-                                okdesk_api_credintails.get('api_token'))
+                            okdesk_api_credintails.get('api_token'))
     answered_24h_waiting_issues_url = u"http://{}.okdesk.ru/api/v1/issues/count?api_token=\
 {}&status[]=waiting&updated_since={}".format(okdesk_api_credintails.get('domain'),
                                              okdesk_api_credintails.get('api_token'),
@@ -54,7 +52,7 @@ def get_list_long_wait_issues():
 def get_list_overdue_execution_issues():
     overdue_issues_url = u"http://{}.okdesk.ru/api/v1/issues/count?api_token=\
 {}&status[]=waiting&status[]=opened&overdue=1".format(okdesk_api_credintails.get('domain'),
-                                okdesk_api_credintails.get('api_token'))
+                                                      okdesk_api_credintails.get('api_token'))
     return get_list_issues(overdue_issues_url)
 
 
@@ -62,6 +60,8 @@ def main():
     try:
         redis_okdesk = redis.Redis(host='redis_okdesk', port=6379, db=0)
         while True:
+            while 9 > time.localtime()[3] > 17:
+                time.sleep(360)
             overdue_reaction_issue_notices = get_list_overdue_reaction_issues()
             for notice in overdue_reaction_issue_notices:
                 if redis_okdesk.get(u"{}_tlgrm".format(str(notice))) is None:
