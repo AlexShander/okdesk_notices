@@ -60,7 +60,7 @@ def main():
     try:
         redis_okdesk = redis.Redis(host='redis_okdesk', port=6379, db=0)
         while True:
-            while 9 > time.localtime()[3] > 17:
+            while 9 > time.localtime()[3] or time.localtime()[3]  > 17:
                 time.sleep(360)
             overdue_reaction_issue_notices = get_list_overdue_reaction_issues()
             for notice in overdue_reaction_issue_notices:
