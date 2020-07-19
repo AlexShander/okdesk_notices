@@ -16,3 +16,9 @@ The Service has 4 parts, all of them are docker containers:
 * redis - Redis database.
 
 ![Image of Concept](https://github.com/AlexShander/okdesk_notices/blob/master/img/concept.png)
+
+# Diagram of overdue_chk's algorithm
+![Image of overdue_chk](https://github.com/AlexShander/okdesk_notices/blob/master/img/overdue_chk.png)
+
+# Diagram of telegrm_snd's algorithm
+![Image of telegrm_snd](https://github.com/AlexShander/okdesk_notices/blob/master/img/telegrm_snd.png)
