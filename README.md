@@ -14,5 +14,4 @@ The Service has 4 parts, all of them are docker containers:
 * email_snd - send a notice via an email server to email
 * redis - Redis database.
 
-![Image of the concept]
-(https://github.com/AlexShander/okdesk_notices/blob/master/img/concept.png)
+![Image of Concept](https://github.com/AlexShander/okdesk_notices/blob/master/img/concept.png)
