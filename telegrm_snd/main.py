@@ -52,10 +52,10 @@ def get_comments_list(issue_id: int, okdesk_api_credintails: dict) -> str:
 
 def get_last_comments(comments):
     for comment in comments:
-    if len(comment.get('content', "Комментарий пустой")) > 300:
-        return comment.get('content', "Комментарий пустой")[0:300] + '...'
-    else
-        return comment.get('content', "Комментарий пустой")
+        if len(comment.get('content', "Комментарий пустой")) > 300:
+            return comment.get('content', "Комментарий пустой")[0:300] + '...'
+        else
+            return comment.get('content', "Комментарий пустой")
     return "Комментариев к задаче нет."
 
 
