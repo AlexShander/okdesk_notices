@@ -90,8 +90,8 @@ def main():
 Плановое время реакции: {}\n{}\nНаименование: {}\n\
 Описание заявки: {}\n".format(str_planned_reaction_at,
                               issue_url,
-                              issue_info.get('title', "Не указали наименование"),
-                              issue_info.get('description', "Нет описания задачи")                              )
+                              issue_info.get('title', "Не указали наименование")[0:100] if len(issue_info.get('title', "Не указали наименование")) > 100 else issue_info.get('title', "Не указали наименование"),
+                              issue_info.get('description', "Нет описания задачи")[0:100] if len(issue_info.get('description', "Нет описания задачи")) > 100 else issue_info.get('description', "Нет описания задачи"))
             if not send_msg_to_tlgrm(tlgrm_msg, tlgrm_api_credintails=tlgrm_api_credintails):
                 redis_okdesk.delete(u"{}_tlgrm".format(issue_id))
         long_waiting_message = long_waiting_channel.get_message()
@@ -116,8 +116,8 @@ def main():
 Ответственный по заявке: {}\n\
 Последний комментарий к задаче: {}\n{}".format("Ожидание",
                                                str_last_at,
-                                               issue_info.get('title', "Не указали наименование"),
-                                               issue_info.get('description', "Нет описания задачи"),
+                                               issue_info.get('title', "Не указали наименование")[0:100] if len(issue_info.get('title', "Не указали наименование")) > 100 else issue_info.get('title', "Не указали наименование"),
+                                               issue_info.get('description', "Нет описания задачи")[0:100] if len(issue_info.get('description', "Нет описания задачи")) > 100 else issue_info.get('description', "Нет описания задачи"),
                                                assigned_user,
                                                comment,
                                                issue_url)
@@ -151,8 +151,8 @@ def main():
 Ответственный по заявке: {}\n\
 Последний комментарий к задаче: {}\n{}".format(str_deadline_at,
                                                str_last_at,
-                                               issue_info.get('title', "Не указали наименование"),
-                                               issue_info.get('description', "Нет описания задачи"),
+                                               issue_info.get('title', "Не указали наименование")[0:100] if len(issue_info.get('title', "Не указали наименование")) > 100 else issue_info.get('title', "Не указали наименование"),
+                                               issue_info.get('description', "Нет описания задачи")[0:100] if len(issue_info.get('description', "Нет описания задачи")) > 100 else issue_info.get('description', "Нет описания задачи"),
                                                assigned_user,
                                                comment,
                                                issue_url)
